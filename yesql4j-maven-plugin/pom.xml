@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <version>1.0.3-SNAPSHOT</version>
+    <version>0.1-beta</version>
 
     <artifactId>yesql4j-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
@@ -105,7 +105,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven.compiler.version}</version>
                 <configuration>
-                    <release>${jdk.version}</release>
+                    <release>${java.version}</release>
                 </configuration>
             </plugin>
             <plugin>

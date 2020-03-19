@@ -9,6 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <version>0.1-beta</version>
+
     <artifactId>yesql4j-reactor</artifactId>
 
     <dependencies>

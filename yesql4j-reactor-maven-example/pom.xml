@@ -52,7 +52,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven.compiler.version}</version>
                 <configuration>
-                    <release>${jdk.version}</release>
+                    <release>${java.version}</release>
                     <generatedSourcesDirectory>target/generated-sources/sql/java</generatedSourcesDirectory>
                 </configuration>
             </plugin>
