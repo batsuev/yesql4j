@@ -71,7 +71,6 @@
     <modules>
         <module>yesql4j-reactor</module>
         <module>yesql4j-maven-plugin</module>
-        <module>yesql4j-reactor-maven-example</module>
     </modules>
 
 
