@@ -16,6 +16,12 @@ public final class Yesql4jReactor {
 
     private static Logger log = LoggerFactory.getLogger(Yesql4jReactor.class);
 
+    /**
+     * Prepared query execution
+     * @param pool
+     * @param query
+     * @return
+     */
     public static Mono<RowSet<Row>> preparedQuery(MySQLPool pool, String query) {
         return Mono.subscriberContext().flatMap(
                 (context) -> queryMono(context, pool, query).subscribeOn(Yesql4jSchedulers.scheduler(pool))

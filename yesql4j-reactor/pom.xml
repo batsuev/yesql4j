@@ -5,7 +5,7 @@
     <parent>
         <artifactId>yesqlj4-root</artifactId>
         <groupId>com.yesql4j</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <version>0.1-beta</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
