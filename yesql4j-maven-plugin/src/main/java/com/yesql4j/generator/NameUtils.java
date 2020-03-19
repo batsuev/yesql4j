@@ -20,7 +20,8 @@ public final class NameUtils {
 
     public static String className(Path path, Path sourceRoot) {
         var p = sourceRoot.relativize(path);
-        var fileName = StringUtils.removeEnd(p.getFileName().toString(), ".sql");
+        var fileName = StringUtils.removeEnd(p.getFileName().toString(), ".sql")
+                .replace("-", "_");
         return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, fileName);
     }
 
