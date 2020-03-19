@@ -3,19 +3,22 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>yesql4j</groupId>
+        <groupId>com.yesql4j</groupId>
         <artifactId>yesqlj4-root</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <version>${yesql4j.version}</version>
+    <version>1.0-SNAPSHOT</version>
 
     <artifactId>yesql4j-reactor-maven-example</artifactId>
+    <properties>
+        <yesql4j.version>1.0-SNAPSHOT</yesql4j.version>
+    </properties>
 
     <dependencies>
         <dependency>
-            <groupId>yesql4j</groupId>
+            <groupId>com.yesql4j</groupId>
             <artifactId>yesql4j-reactor</artifactId>
             <version>${yesql4j.version}</version>
         </dependency>
@@ -30,9 +33,12 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>yesql4j</groupId>
+                <groupId>com.yesql4j</groupId>
                 <artifactId>yesql4j-maven-plugin</artifactId>
                 <version>${yesql4j.version}</version>
+                <configuration>
+                    <generator>VERTX_MYSQL_REACTOR</generator>
+                </configuration>
                 <executions>
                     <execution>
                         <phase>generate-sources</phase>
@@ -47,6 +53,7 @@
                 <version>${maven.compiler.version}</version>
                 <configuration>
                     <release>${jdk.version}</release>
+                    <generatedSourcesDirectory>target/generated-sources/sql/java</generatedSourcesDirectory>
                 </configuration>
             </plugin>
             <plugin>

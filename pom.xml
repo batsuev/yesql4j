@@ -4,18 +4,53 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>yesql4j</groupId>
+    <groupId>com.yesql4j</groupId>
     <artifactId>yesqlj4-root</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+
+    <name>${project.groupId}:${project.artifactId}</name>
+    <url>https://yesql4j.com/</url>
+    <description>to be added</description>
+
+    <developers>
+        <developer>
+            <name>Aleksandr Batsuev</name>
+            <email>batsuev@gmail.com</email>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>Eclipse Public License</name>
+            <url>http://www.eclipse.org/legal/epl-v10.html</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git://github.com/batsuev/yesql4j.git</connection>
+        <developerConnection>scm:git:ssh://github.com:batsuev/yesql4j.git</developerConnection>
+        <url>https://github.com/batsuev/yesql4j/tree/master</url>
+    </scm>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+    </distributionManagement>
 
     <properties>
         <java.version>11</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <yesql4j.version>1.0-SNAPSHOT</yesql4j.version>
 
+        <maven.source.version>3.2.1</maven.source.version>
         <plugin.version>3.6.0</plugin.version>
         <jdk.version>11</jdk.version>
         <antlr.version>4.8-1</antlr.version>
