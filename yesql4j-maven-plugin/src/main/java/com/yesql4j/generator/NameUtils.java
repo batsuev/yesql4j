@@ -9,13 +9,12 @@ import java.util.ArrayList;
 public final class NameUtils {
 
     public static String methodName(String queryName) {
-        var cleanuped = StringUtils.removeEnd(
-                StringUtils.removeEnd(
-                        queryName.replaceAll("[-]+", "_"),
-                        "<!"),
-                "!");
+        var cleanName = queryName.replaceAll("[-]+", "_");
+        cleanName = StringUtils.removeEnd(cleanName, "<!");
+        cleanName = StringUtils.removeEnd(cleanName, "!");
+        cleanName = StringUtils.removeEnd(cleanName, "?");
 
-        return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, cleanuped);
+        return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, cleanName);
     }
 
     public static String className(Path path, Path sourceRoot) {
