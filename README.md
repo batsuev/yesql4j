@@ -4,6 +4,8 @@ Currently supported frameworks:
 - Spring (jdbc template)
 - Vert.x MySQL + reactor
 
+Inspired by https://github.com/krisajenkins/yesql
+
 ## Installation
 ```xml
 <plugin>
