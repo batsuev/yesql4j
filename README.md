@@ -11,7 +11,7 @@ Inspired by https://github.com/krisajenkins/yesql
 <plugin>
     <groupId>com.yesql4j</groupId>
     <artifactId>yesql4j-maven-plugin</artifactId>
-    <version>0.1-beta</version>
+    <version>0.1.1-beta</version>
     <configuration>
         <generator>SPRING</generator>
     </configuration>

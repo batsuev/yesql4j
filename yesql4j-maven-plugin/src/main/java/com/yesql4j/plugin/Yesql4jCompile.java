@@ -59,11 +59,6 @@ public final class Yesql4jCompile extends AbstractMojo {
 
             if (!outputDirectory.exists()) {
                 FileUtils.mkdir(outputDirectory.getAbsolutePath());
-            }else {
-                try {
-                    FileUtils.cleanDirectory(outputDirectory);
-                } catch (IOException e) {
-                }
             }
 
             for (File sqlSource : sqlSources) {

@@ -7,7 +7,7 @@
     <groupId>com.yesql4j</groupId>
     <artifactId>yesqlj4-root</artifactId>
     <packaging>pom</packaging>
-    <version>0.1-beta</version>
+    <version>0.1.1-beta</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <url>https://yesql4j.com/</url>
@@ -141,7 +141,7 @@
                         <release>${java.version}</release>
                     </configuration>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
