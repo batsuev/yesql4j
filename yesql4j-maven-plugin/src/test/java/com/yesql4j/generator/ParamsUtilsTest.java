@@ -1,5 +1,6 @@
 package com.yesql4j.generator;
 
+import com.yesql4j.parser.params.SQLParamsFinder;
 import org.junit.jupiter.api.Test;
 import com.yesql4j.parser.SQLQueryDefinition;
 
@@ -41,6 +42,20 @@ class ParamsUtilsTest {
         assertEquals(
                 Arrays.asList("a", "p0", "a", "b", "p1"),
                 ParamsUtils.getQueryParamsBinding(queryDefinition)
+        );
+    }
+
+    @Test
+    void getParamsOffsets() {
+        String query = "SELECT name FROM test_table WHERE a = :long_param AND b = ? AND c = :a AND d = :b AND e = ?;";
+        SQLQueryDefinition queryDefinition = new SQLQueryDefinition(
+                "test",
+                query
+        );
+
+        assertEquals(
+                Arrays.asList(38, 48, 57, 67, 77),
+                ParamsUtils.getParamsOffsets(queryDefinition)
         );
     }
 }

@@ -1,5 +1,6 @@
 package com.yesql4j.parser;
 
+import com.yesql4j.parser.params.SQLParam;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -48,7 +49,10 @@ class SQLParserTest {
                                 "\t:name,\n" +
                                 "\t:age\n" +
                                 ");",
-                        Arrays.asList("name", "age")),
+                        Arrays.asList(
+                                SQLParam.create("name", 45),
+                                SQLParam.create("age", 53)
+                        )),
                 queries.get(1));
 
         assertEquals(
@@ -57,7 +61,9 @@ class SQLParserTest {
                         "SELECT *\n" +
                                 "FROM person\n" +
                                 "WHERE age > :age;",
-                        Collections.singletonList("age")),
+                        Collections.singletonList(
+                                SQLParam.create("age", 33)
+                        )),
                 queries.get(2));
 
         assertEquals(
@@ -66,7 +72,9 @@ class SQLParserTest {
                         "SELECT *\n" +
                                 "FROM person\n" +
                                 "WHERE age IN (:age);",
-                        Collections.singletonList("age")),
+                        Collections.singletonList(
+                                SQLParam.create("age", 35)
+                        )),
                 queries.get(3));
 
         assertEquals(
@@ -75,7 +83,10 @@ class SQLParserTest {
                         "UPDATE person\n" +
                                 "SET age = :age\n" +
                                 "WHERE name = :name;",
-                        Arrays.asList("age", "name")),
+                        Arrays.asList(
+                                SQLParam.create("age", 24),
+                                SQLParam.create("name", 42)
+                        )),
                 queries.get(4));
 
         assertEquals(
@@ -83,7 +94,9 @@ class SQLParserTest {
                         "delete-person!",
                         "DELETE FROM person\n" +
                                 "WHERE name = :name;",
-                        Collections.singletonList("name")),
+                        Collections.singletonList(
+                                SQLParam.create("name", 32)
+                        )),
                 queries.get(5));
 
         assertEquals(
@@ -120,7 +133,10 @@ class SQLParserTest {
                                 "    :a + 1 adder,\n" +
                                 "    :b - 1 subtractor\n" +
                                 "FROM SYSIBM.SYSDUMMY1;",
-                        Arrays.asList("a", "b")
+                        Arrays.asList(
+                                SQLParam.create("a", 11),
+                                SQLParam.create("b", 29)
+                        )
                 ),
                 queries.get(1)
         );

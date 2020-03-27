@@ -1,5 +1,8 @@
 package com.yesql4j.parser;
 
+import com.yesql4j.parser.params.SQLParam;
+import com.yesql4j.parser.params.SQLParamsFinder;
+
 import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
@@ -12,7 +15,7 @@ public final class SQLQueryDefinition {
     @NotNull
     private final String query;
     @NotNull
-    private final List<String> params;
+    private final List<SQLParam> params;
     @NotNull
     private final Map<String, String> paramsTypes;
 
@@ -24,11 +27,11 @@ public final class SQLQueryDefinition {
         this(name, query, SQLParamsFinder.search(query), paramsTypes);
     }
 
-    public SQLQueryDefinition(@NotNull String name, @NotNull String query, @NotNull List<String> params) {
+    public SQLQueryDefinition(@NotNull String name, @NotNull String query, @NotNull List<SQLParam> params) {
         this(name, query, params, Collections.emptyMap());
     }
 
-    public SQLQueryDefinition(@NotNull String name, @NotNull String query, @NotNull List<String> params, Map<String, String> paramsTypes) {
+    public SQLQueryDefinition(@NotNull String name, @NotNull String query, @NotNull List<SQLParam> params, Map<String, String> paramsTypes) {
         this.name = name;
         this.query = query;
         this.params = params;
@@ -43,7 +46,7 @@ public final class SQLQueryDefinition {
         return query;
     }
 
-    public List<String> getParams() {
+    public List<SQLParam> getParams() {
         return params;
     }
 
@@ -60,7 +63,10 @@ public final class SQLQueryDefinition {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SQLQueryDefinition that = (SQLQueryDefinition) o;
-        return name.equals(that.name) && query.equals(that.query) && params.equals(that.params) && paramsTypes.equals(that.paramsTypes);
+        return name.equals(that.name) &&
+                query.equals(that.query) &&
+                params.equals(that.params) &&
+                paramsTypes.equals(that.paramsTypes);
     }
 
     @Override

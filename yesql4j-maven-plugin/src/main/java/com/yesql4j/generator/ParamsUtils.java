@@ -1,6 +1,7 @@
 package com.yesql4j.generator;
 
 import com.yesql4j.parser.SQLQueryDefinition;
+import com.yesql4j.parser.params.SQLParam;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,28 +9,30 @@ import java.util.stream.Collectors;
 
 public final class ParamsUtils {
 
-    // TODO: quoted cases
     public static String cleanupQuery(SQLQueryDefinition query) {
-        String res = query.getQuery();
-        List<String> params = new ArrayList<>(query.getParams());
-        params.sort((s, t1) -> t1.length() - s.length());
-
-        for (String param : params) {
-            if (!param.equals("?"))
-                res = res.replace(":" + param, "?");
+        StringBuilder res = new StringBuilder(query.getQuery());
+        int offset = 0;
+        for (SQLParam param : query.getParams()) {
+            if (param.isNamed()) {
+                SQLParam offseted = param.offsetLeft(offset);
+                res.replace(offseted.getStartIndex(), offseted.getEndIndex(), "?");
+                offset += offseted.getNameLength() - 1;
+            }
         }
-        return res;
+
+        return res.toString();
     }
 
     public static List<String> getQueryParamsNames(SQLQueryDefinition query) {
         int lastQIndex = 0;
         ArrayList<String> res = new ArrayList<>();
-        for (String param : query.getParams()) {
-            if (param.equals("?")) {
+        for (SQLParam param : query.getParams()) {
+            if (param.isNamed()) {
+                if (!res.contains(param.getName()))
+                    res.add(param.getName());
+            }else {
                 res.add("p" + lastQIndex);
                 lastQIndex++;
-            } else if (!res.contains(param)) {
-                res.add(param);
             }
         }
         return res;
@@ -38,15 +41,25 @@ public final class ParamsUtils {
     public static List<String> getQueryParamsBinding(SQLQueryDefinition query) {
         int lastQIndex = 0;
         ArrayList<String> res = new ArrayList<>();
-        for (String param : query.getParams()) {
-            if (param.equals("?")) {
+        for (SQLParam param : query.getParams()) {
+            if (param.isNamed()) {
+                res.add(param.getName());
+            }else {
                 res.add("p" + lastQIndex);
                 lastQIndex++;
-            } else {
-                res.add(param);
             }
         }
         return res;
+    }
+
+    public static List<Integer> getParamsOffsets(SQLQueryDefinition query) {
+        int offset = 0;
+        ArrayList<Integer> offsets = new ArrayList<>();
+        for (SQLParam param : query.getParams()) {
+            offsets.add(param.getStartIndex() - offset);
+            offset += param.getNameLength() - 1;
+        }
+        return offsets;
     }
 
     private static final String[] searchPackages = {

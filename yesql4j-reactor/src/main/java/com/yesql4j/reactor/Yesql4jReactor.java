@@ -60,6 +60,14 @@ public final class Yesql4jReactor {
         });
     }
 
+    public static Row singleRow(RowSet<Row> rows) {
+        if (rows.size() == 1) {
+            return rows.iterator().next();
+        }else {
+            return null;
+        }
+    }
+
     private static Mono<Transaction> startTransaction(MySQLPool pool) {
         return Mono.create(sink -> {
             log.debug("starting transaction");

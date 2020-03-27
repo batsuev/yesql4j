@@ -1,4 +1,4 @@
-package com.yesql4j.parser;
+package com.yesql4j.parser.params;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,10 +13,11 @@ public final class SQLParamsFinder {
         PARAMETER
     }
 
-    public static List<String> search(String query) {
+    public static List<SQLParam> search(String query) {
         State state = State.QUERY;
-        ArrayList<String> params = new ArrayList<>();
+        ArrayList<SQLParam> params = new ArrayList<>();
         StringBuilder namedParam = new StringBuilder();
+        int paramNameStartedAt = -1;
         for (int i = 0; i < query.length(); i++) {
             char c = query.charAt(i);
             switch (state) {
@@ -30,10 +31,11 @@ public final class SQLParamsFinder {
                             break;
                         case ':':
                             state = State.PARAMETER;
+                            paramNameStartedAt = i;
                             namedParam = new StringBuilder();
                             break;
                         case '?':
-                            params.add("?");
+                            params.add(SQLParam.create("?", i));
                             break;
                         default:
                             break;
@@ -49,15 +51,16 @@ public final class SQLParamsFinder {
                     if (Character.isAlphabetic(c) || Character.isDigit(c) || c == '_')
                         namedParam.append(c);
                     else {
-                        params.add(namedParam.toString());
+                        params.add(SQLParam.create(namedParam.toString(), paramNameStartedAt));
                         namedParam = new StringBuilder();
+                        paramNameStartedAt = -1;
                         state = State.QUERY;
                     }
                     break;
             }
         }
         if (state == State.PARAMETER) {
-            params.add(namedParam.toString());
+            params.add(SQLParam.create(namedParam.toString(), paramNameStartedAt));
         }
 
         return params;
