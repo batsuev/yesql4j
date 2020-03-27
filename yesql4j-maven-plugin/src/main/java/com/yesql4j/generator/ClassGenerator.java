@@ -1,82 +1,66 @@
 package com.yesql4j.generator;
 
+import com.github.jknack.handlebars.Context;
+import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Template;
+import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
+import com.github.jknack.handlebars.io.TemplateLoader;
+import com.yesql4j.generator.templates.SQLClassTemplateData;
+import com.yesql4j.generator.templates.SQLQueryTemplateData;
 import com.yesql4j.parser.SQLQueryDefinition;
 import com.yesql4j.parser.SQLQueryType;
-import org.apache.commons.lang3.StringUtils;
-import com.yesql4j.generator.variants.ReactorSQLClassGenerator;
-import com.yesql4j.generator.variants.SpringSQLClassGenerator;
 
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public final class ClassGenerator {
+
+    private final TemplateLoader templateLoader = new ClassPathTemplateLoader();
+    private final Handlebars handlebars;
+
+    public ClassGenerator() {
+        templateLoader.setPrefix("/");
+        templateLoader.setSuffix(".java");
+
+        handlebars = new Handlebars(templateLoader);
+    }
 
     @NotNull
     public String generate(
             @NotNull Path sqlSourceFile,
             @NotNull Path sqlSourceRoot,
             @NotNull List<SQLQueryDefinition> queries,
-            @NotNull GenerationTarget target) {
+            @NotNull GenerationTarget target) throws IOException {
 
-        var generator = generatorForType(target);
+        var template = templateForType(target);
 
-        ArrayList<String> methods = new ArrayList<>();
-        queries.forEach(query -> {
-            var sqlQueryType = SQLQueryType.forName(query.getName());
-            switch (sqlQueryType) {
-                case SELECT:
-                    methods.addAll(generator.generateSelect(query));
-                    break;
-                case INSERT:
-                    methods.addAll(generator.generateInsert(query));
-                    break;
-                case UPDATE:
-                    methods.addAll(generator.generateUpdate(query));
-                    break;
-            }
-        });
+        var templateData = new SQLClassTemplateData(
+                NameUtils.className(sqlSourceFile, sqlSourceRoot),
+                NameUtils.packageName(sqlSourceFile, sqlSourceRoot),
+                queries.stream()
+                        .filter(q -> SQLQueryType.forName(q.getName()) == SQLQueryType.SELECT)
+                        .map(SQLQueryTemplateData::create)
+                        .collect(Collectors.toList()),
+                queries.stream()
+                        .filter(q -> SQLQueryType.forName(q.getName()) == SQLQueryType.UPDATE)
+                        .map(SQLQueryTemplateData::create)
+                        .collect(Collectors.toList()),
+                queries.stream()
+                        .filter(q -> SQLQueryType.forName(q.getName()) == SQLQueryType.INSERT)
+                        .map(SQLQueryTemplateData::create)
+                        .collect(Collectors.toList())
+        );
 
-        var imports = generator.getImports().stream().map(p -> String.format("import %s;", p))
-                .collect(Collectors.joining("\n"));
-
-        var packageName = NameUtils.packageName(sqlSourceFile, sqlSourceRoot);
-        if (packageName.isEmpty()) {
-            packageName = "";
-        } else {
-            packageName = "package " + packageName + ";\n\n";
-        }
-
-        String className = NameUtils.className(sqlSourceFile, sqlSourceRoot);
-
-        return String.format("%s" +
-                        "%s" +
-                        "\n" +
-                        "\n" +
-                        "%s" +
-                        "public final class %s {\n" +
-                        "\n" +
-                        "%s" +
-                        "\n" +
-                        "%s" +
-                        "\n" +
-                        "}",
-                packageName,
-                imports,
-                generator.getClassAnnotations().stream().map(el -> el + "\n").collect(Collectors.joining()),
-                className,
-                generator.generateClassHeader(className),
-                StringUtils.join(methods, "\n\n"));
+        return template.apply(templateData);
     }
 
-    private IClassGenerator generatorForType(GenerationTarget target) {
+    private Template templateForType(GenerationTarget target) throws IOException {
         switch (target) {
             case VERTX_MYSQL_REACTOR:
-                return new ReactorSQLClassGenerator();
-            case SPRING:
-                return new SpringSQLClassGenerator();
+                return handlebars.compile("reactor");
         }
         throw new RuntimeException("Cannot find generator for type");
     }

@@ -56,7 +56,6 @@ public final class Yesql4jCompile extends AbstractMojo {
             getLog().info(String.format("target: %s", outputDirectory));
             List<File> sqlSources = findSQLSources(sqlSourceRoot);
 
-
             if (!outputDirectory.exists()) {
                 FileUtils.mkdir(outputDirectory.getAbsolutePath());
             }

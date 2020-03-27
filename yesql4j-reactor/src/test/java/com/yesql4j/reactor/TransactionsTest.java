@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
+import java.util.Collections;
 
 public class TransactionsTest {
 
@@ -58,13 +59,13 @@ public class TransactionsTest {
     public void basicTransactionTest() {
         Mono<Long> insert = Yesql4jReactor.preparedQuery(
                 pool,
-                "INSERT INTO test_table (value) VALUES (?)", Tuple.of("test1")
+                "INSERT INTO test_table (value) VALUES (?)", Collections.emptyList(), Tuple.of("test1")
         ).map(res -> res.property(MySQLClient.LAST_INSERTED_ID));
 
         Mono<String> insertedValue = insert.flatMap(insertedId ->
                 Yesql4jReactor.preparedQuery(
                         pool,
-                        "SELECT value FROM test_table WHERE id = ?", Tuple.of(insertedId)
+                        "SELECT value FROM test_table WHERE id = ?", Collections.emptyList(), Tuple.of(insertedId)
                 ).map(res -> res.iterator().next().getString("value"))
         );
 
@@ -80,7 +81,7 @@ public class TransactionsTest {
     public void rollbackOnProcessingExceptionTest() {
         Mono<Long> insert = Yesql4jReactor.preparedQuery(
                 pool,
-                "INSERT INTO test_table (value) VALUES (?)", Tuple.of("test1")
+                "INSERT INTO test_table (value) VALUES (?)", Collections.emptyList(), Tuple.of("test1")
         ).map(res -> res.property(MySQLClient.LAST_INSERTED_ID));
 
         Mono<Long> failed = Mono.error(new Exception("processing exception"));
@@ -106,7 +107,7 @@ public class TransactionsTest {
     public void rollbackOnFailedQueryTest() {
         Mono<Long> insert = Yesql4jReactor.preparedQuery(
                 pool,
-                "INSERT INTO test_table (value) VALUES (?)", Tuple.of("test1")
+                "INSERT INTO test_table (value) VALUES (?)", Collections.emptyList(), Tuple.of("test1")
         ).map(res -> res.property(MySQLClient.LAST_INSERTED_ID));
 
         Mono<Long> failed = Yesql4jReactor.preparedQuery(
@@ -134,7 +135,7 @@ public class TransactionsTest {
     public void cancellationTest() {
         Mono<Long> insert = Yesql4jReactor.preparedQuery(
                 pool,
-                "INSERT INTO test_table (value) VALUES (?)", Tuple.of("test1")
+                "INSERT INTO test_table (value) VALUES (?)", Collections.emptyList(), Tuple.of("test1")
         ).map(res -> res.property(MySQLClient.LAST_INSERTED_ID));
 
         Mono<Long> longMono = Mono.delay(Duration.ofSeconds(30));

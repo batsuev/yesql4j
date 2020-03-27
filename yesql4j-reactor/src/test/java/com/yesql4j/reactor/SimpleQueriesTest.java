@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 public class SimpleQueriesTest {
 
@@ -43,13 +44,17 @@ public class SimpleQueriesTest {
     public void selectTest() {
         Mono<Long> insert = Yesql4jReactor.preparedQuery(
                 pool,
-                "INSERT INTO test_table (value) VALUES (?)", Tuple.of("test1")
+                "INSERT INTO test_table (value) VALUES (?)",
+                Collections.emptyList(),
+                Tuple.of("test1")
         ).map(res -> res.property(MySQLClient.LAST_INSERTED_ID));
 
         Mono<String> insertedValue = insert.flatMap(insertedId ->
                 Yesql4jReactor.preparedQuery(
                         pool,
-                        "SELECT value FROM test_table WHERE id = ?", Tuple.of(insertedId)
+                        "SELECT value FROM test_table WHERE id = ?",
+                        Collections.emptyList(),
+                        Tuple.of(insertedId)
                 ).map(res -> res.iterator().next().getString("value"))
         );
 
@@ -63,13 +68,17 @@ public class SimpleQueriesTest {
     public void updateTest() {
         Mono<Long> insert = Yesql4jReactor.preparedQuery(
                 pool,
-                "INSERT INTO test_table (value) VALUES (?)", Tuple.of("test1")
+                "INSERT INTO test_table (value) VALUES (?)",
+                Collections.emptyList(),
+                Tuple.of("test1")
         ).map(res -> res.property(MySQLClient.LAST_INSERTED_ID));
 
         Mono<Integer> updatesCount = insert.flatMap(insertedId ->
                 Yesql4jReactor.preparedQuery(
                         pool,
-                        "UPDATE test_table SET value = ? WHERE id = ?", Tuple.of("newvalue", insertedId)
+                        "UPDATE test_table SET value = ? WHERE id = ?",
+                        Collections.emptyList(),
+                        Tuple.of("newvalue", insertedId)
                 ).map(SqlResult::rowCount)
         );
 

@@ -54,8 +54,8 @@ public final class SQLQueryDefinition {
         return paramsTypes;
     }
 
-    public boolean noParams() {
-        return this.params.isEmpty();
+    public boolean hasParams() {
+        return !this.params.isEmpty();
     }
 
     @Override
