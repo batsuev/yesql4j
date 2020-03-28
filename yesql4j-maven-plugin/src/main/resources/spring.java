@@ -11,6 +11,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import java.sql.PreparedStatement;
 import java.util.List;
+import com.yesql4j.spring.InParameters;
 
 @Component
 public final class {{className}} {

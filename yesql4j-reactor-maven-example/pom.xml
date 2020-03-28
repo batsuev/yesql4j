@@ -19,7 +19,7 @@
     <dependencies>
         <dependency>
             <groupId>com.yesql4j</groupId>
-            <artifactId>yesql4j-reactor</artifactId>
+            <artifactId>yesql4j-vertx-mysql-reactor</artifactId>
             <version>${yesql4j.version}</version>
         </dependency>
 

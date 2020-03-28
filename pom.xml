@@ -73,8 +73,9 @@
     </properties>
 
     <modules>
-        <module>yesql4j-reactor</module>
+        <module>yesql4j-vertx-mysql-reactor</module>
         <module>yesql4j-maven-plugin</module>
+        <module>yesql4j-spring</module>
     </modules>
 
     <profiles>

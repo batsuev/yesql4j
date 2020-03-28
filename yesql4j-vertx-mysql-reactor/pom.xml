@@ -11,7 +11,7 @@
 
     <version>0.1.2-beta</version>
 
-    <artifactId>yesql4j-reactor</artifactId>
+    <artifactId>yesql4j-vertx-mysql-reactor</artifactId>
 
     <dependencies>
         <dependency>
