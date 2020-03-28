@@ -30,7 +30,7 @@ public final class ParamsUtils {
             if (param.isNamed()) {
                 if (!res.contains(param.getName()))
                     res.add(param.getName());
-            }else {
+            } else {
                 res.add("p" + lastQIndex);
                 lastQIndex++;
             }
@@ -44,7 +44,7 @@ public final class ParamsUtils {
         for (SQLParam param : query.getParams()) {
             if (param.isNamed()) {
                 res.add(param.getName());
-            }else {
+            } else {
                 res.add("p" + lastQIndex);
                 lastQIndex++;
             }
@@ -87,7 +87,7 @@ public final class ParamsUtils {
                     String type = queryDefinition.getParamsTypes().get(el);
                     if (type != null) {
                         return ParamsUtils.predictType(type) + " " + el;
-                    }else {
+                    } else {
                         return "Object " + el;
                     }
                 })

@@ -33,7 +33,9 @@ public final class SQLParam {
         return startIndex + getNameLength();
     }
 
-    public boolean isNamed() { return !name.equals("?"); }
+    public boolean isNamed() {
+        return !name.equals("?");
+    }
 
     @Override
     public String toString() {

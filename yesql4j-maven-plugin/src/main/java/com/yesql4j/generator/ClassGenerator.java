@@ -1,6 +1,5 @@
 package com.yesql4j.generator;
 
-import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
@@ -61,6 +60,8 @@ public final class ClassGenerator {
         switch (target) {
             case VERTX_MYSQL_REACTOR:
                 return handlebars.compile("reactor");
+            case SPRING:
+                return handlebars.compile("spring");
         }
         throw new RuntimeException("Cannot find generator for type");
     }

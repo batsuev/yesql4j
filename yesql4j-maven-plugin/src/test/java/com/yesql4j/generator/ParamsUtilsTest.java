@@ -1,12 +1,11 @@
 package com.yesql4j.generator;
 
-import com.yesql4j.parser.params.SQLParamsFinder;
-import org.junit.jupiter.api.Test;
 import com.yesql4j.parser.SQLQueryDefinition;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ParamsUtilsTest {
 
