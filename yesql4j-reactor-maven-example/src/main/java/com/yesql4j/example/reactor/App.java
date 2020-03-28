@@ -4,7 +4,7 @@ import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.PoolOptions;
 import reactor.core.publisher.Mono;
-import com.yesqlj4.example.data.Queries;
+import data.Queries;
 
 public class App {
 
