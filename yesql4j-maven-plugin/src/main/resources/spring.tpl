@@ -11,6 +11,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import java.sql.PreparedStatement;
 import java.util.List;
+import java.util.Arrays;
 import com.yesql4j.spring.InParameters;
 
 @Component
@@ -22,22 +23,36 @@ public final class {{className}} {
         this.jdbcTemplate = jdbcTemplate;
     }
 {{#each selects}}{{#if hasParams}}
-    @NotNull
-    public <T> List<T> {{name}}({{paramsSignature}}) {
-        return jdbcTemplate.query("{{query}}", new Object[]{ {{paramsBindings}} });
+    @NonNull
+    public <T> List<T> {{name}}({{paramsSignature}}, RowMapper<T> rowMapper) {
+        List<Object> params = Arrays.asList({{paramsBindings}});
+        if (InParameters.hasListParam(params)) {
+            String updatedQuery = InParameters.addListParams("{{query}}", Arrays.asList({{paramsIndexes}}), params);
+            List<Object> updatedParams = InParameters.flattenParams(params);
+            return jdbcTemplate.query(updatedQuery, updatedParams.toArray(), rowMapper);
+        }else {
+            return jdbcTemplate.query("{{query}}", params.toArray(), rowMapper);
+        }
     }{{else}}
-    @NotNull
-    public <T> Lst<T> {{name}}() {
-        return jdbcTemplate.query(pool, "{{query}}");
+    @NonNull
+    public <T> Lst<T> {{name}}(RowMapper<T> rowMapper) {
+        return jdbcTemplate.query(pool, "{{query}}", rowMapper);
     }{{/if}}
 {{/each}}
 {{#each updates}}{{#if hasParams}}
-    @NotNull
+    @NonNull
     public int {{name}}({{paramsSignature}}) {
-        return jdbcTemplate.update("{{query}}", {{paramsBindings}});
+        List<Object> params = Arrays.asList({{paramsBindings}});
+        if (InParameters.hasListParam(params)) {
+            String updatedQuery = InParameters.addListParams("{{query}}", Arrays.asList({{paramsIndexes}}), params);
+            List<Object> updatedParams = InParameters.flattenParams(params);
+            return jdbcTemplate.update(updatedQuery, updatedParams.toArray());
+        }else {
+            return jdbcTemplate.update("{{query}}", {{paramsBindings}});
+        }
     }{{/if}}
 {{/each}}{{#each inserts}}{{#if hasParams}}
-    @NotNull
+    @NonNull
     public Long {{name}}({{paramsSignature}}) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
