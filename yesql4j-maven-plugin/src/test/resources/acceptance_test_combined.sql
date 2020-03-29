@@ -1,16 +1,18 @@
 -- name: create-person-table!
-CREATE TABLE person
-(
-    person_id INTEGER            NOT NULL GENERATED ALWAYS AS IDENTITY,
-    name      VARCHAR(20) UNIQUE NOT NULL,
-    age       INTEGER            NOT NULL
+CREATE TABLE person (
+	person_id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY,
+	name VARCHAR(20) UNIQUE NOT NULL,
+	age INTEGER NOT NULL
 );
 
 -- name: insert-person<!
-INSERT INTO person (name,
-                    age)
-VALUES (:name,
-        :age);
+INSERT INTO person (
+	name,
+	age
+) VALUES (
+	:name,
+	:age
+);
 
 -- name: find-older-than
 SELECT *
@@ -28,8 +30,7 @@ SET age = :age
 WHERE name = :name;
 
 -- name: delete-person!
-DELETE
-FROM person
+DELETE FROM person
 WHERE name = :name;
 
 -- name: drop-person-table!
