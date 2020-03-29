@@ -48,21 +48,33 @@ public final class {{className}} {
             List<Object> updatedParams = InParameters.flattenParams(params);
             return jdbcTemplate.update(updatedQuery, updatedParams.toArray());
         }else {
-            return jdbcTemplate.update("{{query}}", {{paramsBindings}});
+            return jdbcTemplate.update("{{query}}", params.toArray());
         }
     }{{/if}}
 {{/each}}{{#each inserts}}{{#if hasParams}}
     @NonNull
     public Long {{name}}({{paramsSignature}}) {
+        List<Object> params = Arrays.asList({{paramsBindings}});
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement("{{query}}");
-            {{psParamsBindings}}
+            PreparedStatement ps;
+            List<Object> updatedParams = params;
+            if (InParameters.hasListParam(params)) {
+                String updatedQuery = InParameters.addListParams("{{query}}", Arrays.asList({{paramsIndexes}}), params);
+                ps = connection.prepareStatement(updatedQuery);
+                updatedParams = InParameters.flattenParams(params);
+            }else {
+                ps = connection.prepareStatement("{{query}}");
+            }
+            int idx = 0;
+            for (Object param : params) {
+                ps.setObject(++idx, param);
+            }
             return ps;
         }, keyHolder);
         return (long) keyHolder.getKey();
     }{{else}}
-    public Long {{name}}({{paramsSignature}}) {
+    public Long {{name}}() {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> connection.prepareStatement("{{query}}"), keyHolder);
         return (long) keyHolder.getKey();

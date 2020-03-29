@@ -15,7 +15,6 @@ public final class SQLQueryTemplateData {
     private final String paramsSignature;
     private final String paramsIndexes;
     private final String paramsBindings;
-    private final String psParamsBindings;
     private final String name;
     private final Boolean hasParams;
 
@@ -31,7 +30,6 @@ public final class SQLQueryTemplateData {
                 .stream().map(Object::toString).collect(Collectors.joining(", "));
         this.paramsBindings = String.join(",", ParamsUtils.getQueryParamsBinding(sqlQueryDefinition));
         this.hasParams = sqlQueryDefinition.hasParams();
-        this.psParamsBindings = getPreparedStatementParamsBinding(sqlQueryDefinition);
     }
 
     public String getName() {
@@ -44,20 +42,6 @@ public final class SQLQueryTemplateData {
 
     public String getParamsBindings() {
         return paramsBindings;
-    }
-
-    public String getPsParamsBindings() {
-        return psParamsBindings;
-    }
-
-    private static String getPreparedStatementParamsBinding(SQLQueryDefinition queryDefinition) {
-        ArrayList<String> res = new ArrayList<>();
-        List<String> bindings = ParamsUtils.getQueryParamsBinding(queryDefinition);
-        for (int i = 0; i < bindings.size(); i++) {
-            String param = bindings.get(i);
-            res.add(String.format("            ps.setObject(%d, %s);", i + 1, param));
-        }
-        return String.join("\n", res);
     }
 
     public String getParamsIndexes() {
