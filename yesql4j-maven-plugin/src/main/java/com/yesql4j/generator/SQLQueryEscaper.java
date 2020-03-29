@@ -4,13 +4,12 @@ import org.apache.commons.text.translate.AggregateTranslator;
 import org.apache.commons.text.translate.EntityArrays;
 import org.apache.commons.text.translate.LookupTranslator;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 public class SQLQueryEscaper {
 
     private static AggregateTranslator ESCAPER;
+
     static {
         ESCAPER = new AggregateTranslator(
                 new LookupTranslator(Map.of("\"", "\\\"", "\\", "\\\\")),
