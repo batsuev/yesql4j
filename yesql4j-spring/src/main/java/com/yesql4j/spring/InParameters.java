@@ -16,8 +16,9 @@ public final class InParameters {
         int offset = 0;
         for (int i = 0; i < params.size(); i++) {
             Integer index = paramsIndexes.get(i);
-            if (params.get(i) instanceof Collection) {
-                int size = ((Collection) params.get(i)).size();
+            Object param = params.get(i);
+            if (param instanceof Collection) {
+                int size = ((Collection) param).size();
                 String updated = String.join(",", Collections.nCopies(size, "?"));
                 updatedQuery.replace(index + offset, index + offset + 1, updated);
                 offset += updated.length() - 1;

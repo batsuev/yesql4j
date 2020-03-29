@@ -55,7 +55,7 @@ public final class SQLQueryTemplateData {
         List<String> bindings = ParamsUtils.getQueryParamsBinding(queryDefinition);
         for (int i = 0; i < bindings.size(); i++) {
             String param = bindings.get(i);
-            res.add(String.format("            ps.setObject(%d, %s);", i+1, param));
+            res.add(String.format("            ps.setObject(%d, %s);", i + 1, param));
         }
         return String.join("\n", res);
     }

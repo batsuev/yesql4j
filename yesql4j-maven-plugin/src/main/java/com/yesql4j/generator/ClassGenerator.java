@@ -22,7 +22,7 @@ public final class ClassGenerator {
 
     public ClassGenerator() {
         templateLoader.setPrefix("/");
-        templateLoader.setSuffix(".java");
+        templateLoader.setSuffix(".tpl");
 
         handlebars = new Handlebars(templateLoader);
     }
