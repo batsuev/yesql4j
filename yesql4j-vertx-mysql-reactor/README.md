@@ -2,7 +2,7 @@
 Update project properties:
 ```$xml
 <properties>
-  <yesql4j.version>1.0-SNAPSHOT</yesql4j.version>
+  <yesql4j.version>0.1.2-beta</yesql4j.version>
 </properties>
 ```
 
@@ -10,7 +10,7 @@ Update your project maven dependencies:
 ```$xml
 <dependency>
     <groupId>yesql4j</groupId>
-    <artifactId>yesql4j-reactor</artifactId>
+    <artifactId>yesql4j-vertx-mysql-reactor</artifactId>
     <version>${yesql4j.version}</version>
 </dependency>
 ```
