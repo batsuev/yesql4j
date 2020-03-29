@@ -5,11 +5,11 @@
     <parent>
         <artifactId>yesqlj4-root</artifactId>
         <groupId>com.yesql4j</groupId>
-        <version>0.1.2-beta</version>
+        <version>0.1.3-beta</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>yesql4j-spring</artifactId>
-    <version>0.1.2-beta</version>
+    <version>0.1.3-beta</version>
 
 </project>

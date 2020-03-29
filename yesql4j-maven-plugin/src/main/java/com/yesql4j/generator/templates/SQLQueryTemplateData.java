@@ -2,11 +2,9 @@ package com.yesql4j.generator.templates;
 
 import com.yesql4j.generator.NameUtils;
 import com.yesql4j.generator.ParamsUtils;
+import com.yesql4j.generator.SQLQueryEscaper;
 import com.yesql4j.parser.SQLQueryDefinition;
-import org.apache.commons.text.StringEscapeUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public final class SQLQueryTemplateData {
@@ -23,7 +21,7 @@ public final class SQLQueryTemplateData {
     }
 
     private SQLQueryTemplateData(SQLQueryDefinition sqlQueryDefinition) {
-        this.escapedQuery = StringEscapeUtils.escapeJava(ParamsUtils.cleanupQuery(sqlQueryDefinition));
+        this.escapedQuery = SQLQueryEscaper.escape(ParamsUtils.cleanupQuery(sqlQueryDefinition));
         this.name = NameUtils.methodName(sqlQueryDefinition.getName());
         this.paramsSignature = ParamsUtils.methodParams(sqlQueryDefinition);
         this.paramsIndexes = ParamsUtils.getParamsOffsets(sqlQueryDefinition)
