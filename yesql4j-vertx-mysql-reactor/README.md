@@ -2,7 +2,7 @@
 Update project properties:
 ```$xml
 <properties>
-  <yesql4j.version>0.1.3-beta</yesql4j.version>
+  <yesql4j.version>0.1.4-beta</yesql4j.version>
 </properties>
 ```
 

@@ -22,5 +22,10 @@ public class QueryEscapeTest {
                 "SELECT * \\nFROM users WHERE id =\\\"''\\\"",
                 SQLQueryEscaper.escape("SELECT * \nFROM users WHERE id =\"''\"")
         );
+
+        assertEquals(
+                "DELETE FROM saas_sessions WHERE updated_at < SUBDATE(NOW(), INTERVAL 90 DAY);",
+                SQLQueryEscaper.escape("DELETE FROM saas_sessions WHERE updated_at < SUBDATE(NOW(), INTERVAL 90 DAY);")
+        );
     }
 }

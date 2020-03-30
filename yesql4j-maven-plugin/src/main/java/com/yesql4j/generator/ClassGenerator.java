@@ -1,5 +1,6 @@
 package com.yesql4j.generator;
 
+import com.github.jknack.handlebars.EscapingStrategy;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
@@ -24,7 +25,8 @@ public final class ClassGenerator {
         templateLoader.setPrefix("/");
         templateLoader.setSuffix(".tpl");
 
-        handlebars = new Handlebars(templateLoader);
+        handlebars = new Handlebars(templateLoader)
+                .with(EscapingStrategy.NOOP);
     }
 
     @NotNull
