@@ -10,6 +10,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
 import java.util.Arrays;
@@ -30,7 +31,7 @@ public class SimpleQueriesTest {
         poolOpts.setMaxSize(5);
 
         pool = MySQLPool.pool(opts, poolOpts);
-        Yesql4jReactor.preparedQuery(pool,
+        Yesql4jReactor.preparedQuery(pool, Schedulers.single(),
                 "CREATE TABLE IF NOT EXISTS test_table (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, value VARCHAR(255))"
         ).subscribe();
     }
@@ -43,7 +44,7 @@ public class SimpleQueriesTest {
     @Test
     public void selectTest() {
         Mono<Long> insert = Yesql4jReactor.preparedQuery(
-                pool,
+                pool, Schedulers.single(),
                 "INSERT INTO test_table (value) VALUES (?)",
                 Collections.emptyList(),
                 Tuple.of("test1")
@@ -51,7 +52,7 @@ public class SimpleQueriesTest {
 
         Mono<String> insertedValue = insert.flatMap(insertedId ->
                 Yesql4jReactor.preparedQuery(
-                        pool,
+                        pool, Schedulers.single(),
                         "SELECT value FROM test_table WHERE id = ?",
                         Collections.emptyList(),
                         Tuple.of(insertedId)
@@ -67,7 +68,7 @@ public class SimpleQueriesTest {
     @Test
     public void updateTest() {
         Mono<Long> insert = Yesql4jReactor.preparedQuery(
-                pool,
+                pool, Schedulers.single(),
                 "INSERT INTO test_table (value) VALUES (?)",
                 Collections.emptyList(),
                 Tuple.of("test1")
@@ -75,7 +76,7 @@ public class SimpleQueriesTest {
 
         Mono<Integer> updatesCount = insert.flatMap(insertedId ->
                 Yesql4jReactor.preparedQuery(
-                        pool,
+                        pool, Schedulers.single(),
                         "UPDATE test_table SET value = ? WHERE id = ?",
                         Collections.emptyList(),
                         Tuple.of("newvalue", insertedId)
@@ -91,7 +92,7 @@ public class SimpleQueriesTest {
     @Test
     public void batchInsertTest() {
         Mono<Integer> insert = Yesql4jReactor.preparedBatch(
-                pool,
+                pool, Schedulers.single(),
                 "INSERT INTO test_table (value) VALUES (?)", Arrays.asList(Tuple.of("test2"), Tuple.of("test3"), Tuple.of("test4"))
         ).map(SqlResult::rowCount);
 

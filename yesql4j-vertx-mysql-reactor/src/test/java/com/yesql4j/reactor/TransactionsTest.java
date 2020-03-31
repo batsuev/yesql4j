@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
@@ -32,7 +33,7 @@ public class TransactionsTest {
 
         pool = MySQLPool.pool(opts, poolOpts);
 
-        Yesql4jReactor.preparedQuery(pool,
+        Yesql4jReactor.preparedQuery(pool, Schedulers.single(),
                 "CREATE TABLE IF NOT EXISTS test_table (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, value VARCHAR(255))"
         ).subscribe();
     }
@@ -45,7 +46,7 @@ public class TransactionsTest {
     @BeforeEach
     void cleanupTestTable() {
         var cleanup = Yesql4jReactor.preparedQuery(
-                pool,
+                pool, Schedulers.single(),
                 "DELETE FROM test_table WHERE 1"
         ).map(SqlResult::rowCount);
 
@@ -58,18 +59,18 @@ public class TransactionsTest {
     @Test
     public void basicTransactionTest() {
         Mono<Long> insert = Yesql4jReactor.preparedQuery(
-                pool,
+                pool, Schedulers.single(),
                 "INSERT INTO test_table (value) VALUES (?)", Collections.emptyList(), Tuple.of("test1")
         ).map(res -> res.property(MySQLClient.LAST_INSERTED_ID));
 
         Mono<String> insertedValue = insert.flatMap(insertedId ->
                 Yesql4jReactor.preparedQuery(
-                        pool,
+                        pool, Schedulers.single(),
                         "SELECT value FROM test_table WHERE id = ?", Collections.emptyList(), Tuple.of(insertedId)
                 ).map(res -> res.iterator().next().getString("value"))
         );
 
-        Mono<String> transactional = Yesql4jReactor.transactional(pool, insertedValue);
+        Mono<String> transactional = Yesql4jReactor.transactional(pool, Schedulers.single(), insertedValue);
 
         StepVerifier.create(transactional)
                 .expectNext("test1")
@@ -80,20 +81,20 @@ public class TransactionsTest {
     @Test
     public void rollbackOnProcessingExceptionTest() {
         Mono<Long> insert = Yesql4jReactor.preparedQuery(
-                pool,
+                pool, Schedulers.single(),
                 "INSERT INTO test_table (value) VALUES (?)", Collections.emptyList(), Tuple.of("test1")
         ).map(res -> res.property(MySQLClient.LAST_INSERTED_ID));
 
         Mono<Long> failed = Mono.error(new Exception("processing exception"));
 
-        Mono<Long> transactional = Yesql4jReactor.transactional(pool, insert.then(failed));
+        Mono<Long> transactional = Yesql4jReactor.transactional(pool, Schedulers.single(), insert.then(failed));
         StepVerifier.create(transactional)
                 .expectError()
                 .verify();
 
 
         Mono<Integer> allRows = Yesql4jReactor.preparedQuery(
-                pool,
+                pool, Schedulers.single(),
                 "SELECT * FROM test_table"
         ).map(SqlResult::rowCount);
 
@@ -106,22 +107,23 @@ public class TransactionsTest {
     @Test
     public void rollbackOnFailedQueryTest() {
         Mono<Long> insert = Yesql4jReactor.preparedQuery(
-                pool,
+                pool, Schedulers.single(),
                 "INSERT INTO test_table (value) VALUES (?)", Collections.emptyList(), Tuple.of("test1")
         ).map(res -> res.property(MySQLClient.LAST_INSERTED_ID));
 
         Mono<Long> failed = Yesql4jReactor.preparedQuery(
-                pool,
+                pool, Schedulers.single(),
                 "INSERT INTO adfasfsafadsfasfdfa"
         ).map(res -> res.property(MySQLClient.LAST_INSERTED_ID));
 
-        Mono<Long> transactional = Yesql4jReactor.transactional(pool, insert.then(failed));
+        Mono<Long> transactional = Yesql4jReactor.transactional(pool, Schedulers.single(), insert.then(failed));
         StepVerifier.create(transactional)
                 .expectError()
                 .verify();
 
         Mono<Integer> allRows = Yesql4jReactor.preparedQuery(
                 pool,
+                Schedulers.single(),
                 "SELECT * FROM test_table"
         ).map(SqlResult::rowCount);
 
@@ -134,13 +136,13 @@ public class TransactionsTest {
     @Test
     public void cancellationTest() {
         Mono<Long> insert = Yesql4jReactor.preparedQuery(
-                pool,
+                pool, Schedulers.single(),
                 "INSERT INTO test_table (value) VALUES (?)", Collections.emptyList(), Tuple.of("test1")
         ).map(res -> res.property(MySQLClient.LAST_INSERTED_ID));
 
         Mono<Long> longMono = Mono.delay(Duration.ofSeconds(30));
 
-        Mono<Long> transactional = Yesql4jReactor.transactional(pool, insert.then(longMono));
+        Mono<Long> transactional = Yesql4jReactor.transactional(pool, Schedulers.single(), insert.then(longMono));
 
         StepVerifier.create(transactional)
                 .expectSubscription()
@@ -149,7 +151,7 @@ public class TransactionsTest {
                 .verify();
 
         Mono<Integer> allRows = Yesql4jReactor.preparedQuery(
-                pool,
+                pool, Schedulers.single(),
                 "SELECT * FROM test_table"
         ).map(SqlResult::rowCount);
 

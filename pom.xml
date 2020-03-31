@@ -7,7 +7,7 @@
     <groupId>com.yesql4j</groupId>
     <artifactId>yesqlj4-root</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.4-beta</version>
+    <version>0.1.5-beta</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <url>https://yesql4j.com/</url>

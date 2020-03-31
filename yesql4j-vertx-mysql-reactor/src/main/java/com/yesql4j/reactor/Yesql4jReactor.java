@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
+import reactor.core.publisher.SynchronousSink;
+import reactor.core.scheduler.Scheduler;
 import reactor.util.context.Context;
 
 import java.util.Collection;
@@ -18,42 +20,50 @@ public final class Yesql4jReactor {
 
     private static Logger log = LoggerFactory.getLogger(Yesql4jReactor.class);
 
-    public static Mono<RowSet<Row>> preparedQuery(MySQLPool pool, String query) {
+    public static Mono<RowSet<Row>> preparedQuery(MySQLPool pool, Scheduler scheduler, String query) {
         return Mono.subscriberContext().flatMap(
-                (context) -> queryMono(context, pool, query).subscribeOn(Yesql4jSchedulers.scheduler(pool))
+                (context) -> queryMono(context, pool, scheduler, query)
         );
     }
 
-    public static Mono<RowSet<Row>> preparedQuery(MySQLPool pool, String query, List<Integer> paramsIndexes, Tuple params) {
+    public static Mono<RowSet<Row>> preparedQuery(MySQLPool pool, Scheduler scheduler, String query, List<Integer> paramsIndexes, Tuple params) {
         return Mono.subscriberContext().flatMap(
-                (context) -> queryMono(context, pool, query, paramsIndexes, params).subscribeOn(Yesql4jSchedulers.scheduler(pool))
+                (context) -> queryMono(context, pool, scheduler, query, paramsIndexes, params)
         );
     }
 
-    public static Mono<RowSet<Row>> preparedBatch(MySQLPool pool, String query, List<Tuple> batch) {
+    public static Mono<RowSet<Row>> preparedBatch(MySQLPool pool, Scheduler scheduler, String query, List<Tuple> batch) {
         return Mono.subscriberContext().flatMap(
-                (context) -> batchQueryMono(context, pool, query, batch).subscribeOn(Yesql4jSchedulers.scheduler(pool))
+                (context) -> batchQueryMono(context, pool, scheduler, query, batch)
         );
     }
 
-    public static <T> Mono<T> transactional(MySQLPool pool, Mono<T> mono) {
+    public static <T> Mono<T> transactional(MySQLPool pool, Scheduler scheduler, Mono<T> mono) {
         return Mono.subscriberContext().flatMap(currentContext -> {
             if (currentContext.hasKey(Transaction.class)) {
                 log.debug("already in transaction");
 
                 return mono;
             } else {
-                Mono<Transaction> tr = startTransaction(pool);
+                Mono<Transaction> tr = startTransaction(scheduler, pool);
 
                 return Mono.usingWhen(
                         tr,
                         (Transaction transaction) -> mono.subscriberContext(ctx -> ctx.put(Transaction.class, transaction)),
-                        Yesql4jReactor::commitTransaction,
-                        Yesql4jReactor::rollbackTransaction,
-                        Yesql4jReactor::cancelTransaction
+                        (Transaction transaction) -> commitTransaction(scheduler, transaction),
+                        (Transaction transaction, Throwable throwable) -> rollbackTransaction(scheduler, transaction, throwable),
+                        (Transaction transaction) -> cancelTransaction(scheduler, transaction)
                 );
             }
         });
+    }
+
+    public static void handleSingleRow(RowSet<Row> rows, SynchronousSink<Row> sink) {
+        Row row = singleRow(rows);
+        if (row != null) {
+            sink.next(row);
+        }
+        sink.complete();
     }
 
     public static Row singleRow(RowSet<Row> rows) {
@@ -64,8 +74,8 @@ public final class Yesql4jReactor {
         }
     }
 
-    private static Mono<Transaction> startTransaction(MySQLPool pool) {
-        return Mono.create(sink -> {
+    private static Mono<Transaction> startTransaction(Scheduler scheduler, MySQLPool pool) {
+        Mono<Transaction> transaction = Mono.create(sink -> {
             log.debug("starting transaction");
 
             pool.begin(transactionAsyncResult -> {
@@ -76,30 +86,33 @@ public final class Yesql4jReactor {
                 }
             });
         });
+        return transaction.publishOn(scheduler);
     }
 
-    private static Mono<Void> commitTransaction(Transaction transaction) {
-        return Mono.create(sink -> {
+    private static Mono<Boolean> commitTransaction(Scheduler scheduler, Transaction transaction) {
+        Mono<Boolean> commit = Mono.create(sink -> {
             log.debug("committing transaction");
             transaction.commit(voidAsyncResult -> {
                 if (voidAsyncResult.succeeded()) {
-                    sink.success();
+                    sink.success(true);
                 } else {
                     sink.error(voidAsyncResult.cause());
                 }
             });
         });
+        return commit.publishOn(scheduler);
     }
 
-    private static Mono<Object> rollbackTransaction(Transaction transaction, Throwable throwable) {
-        return Mono.create(sink -> {
+    private static Mono<Object> rollbackTransaction(Scheduler scheduler, Transaction transaction, Throwable throwable) {
+        Mono<Object> res = Mono.create(sink -> {
             log.debug("rollback transaction");
             transaction.rollback(voidAsyncResult -> sink.error(throwable));
         });
+        return res.publishOn(scheduler);
     }
 
-    private static Mono<Object> cancelTransaction(Transaction transaction) {
-        return rollbackTransaction(transaction, new Exception("Transaction cancelled"));
+    private static Mono<Object> cancelTransaction(Scheduler scheduler, Transaction transaction) {
+        return rollbackTransaction(scheduler, transaction, new Exception("Transaction cancelled"));
     }
 
     private static SqlClient getCurrentTransaction(Context context, MySQLPool pool, String query) {
@@ -111,16 +124,18 @@ public final class Yesql4jReactor {
         return context.getOrDefault(Transaction.class, pool);
     }
 
-    private static Mono<RowSet<Row>> queryMono(Context context, MySQLPool pool, String query) {
-        return Mono.create(sink -> {
+    private static Mono<RowSet<Row>> queryMono(Context context, MySQLPool pool, Scheduler scheduler, String query) {
+        Mono<RowSet<Row>> queryMono = Mono.create(sink -> {
             SqlClient executor = getCurrentTransaction(context, pool, query);
             SqlClient client = executor.preparedQuery(query, asyncResultMonoSinkAdapter(sink));
             sink.onCancel(client::close);
         });
+
+        return queryMono.publishOn(scheduler);
     }
 
-    private static Mono<RowSet<Row>> queryMono(Context context, MySQLPool pool, String query, List<Integer> paramsIndexes, Tuple params) {
-        return Mono.create(sink -> {
+    private static Mono<RowSet<Row>> queryMono(Context context, MySQLPool pool, Scheduler scheduler, String query, List<Integer> paramsIndexes, Tuple params) {
+        Mono<RowSet<Row>> queryMono = Mono.create(sink -> {
             SqlClient executor = getCurrentTransaction(context, pool, query);
             if (tupleHasList(params)) {
                 String cleanQuery = addListParams(query, paramsIndexes, params);
@@ -132,21 +147,25 @@ public final class Yesql4jReactor {
                 sink.onCancel(client::close);
             }
         });
+        return queryMono.publishOn(scheduler);
     }
 
-    private static Mono<RowSet<Row>> batchQueryMono(Context context, MySQLPool pool, String query, List<Tuple> params) {
-        return Mono.create(sink -> {
+    private static Mono<RowSet<Row>> batchQueryMono(Context context, MySQLPool pool, Scheduler scheduler, String query, List<Tuple> params) {
+        Mono<RowSet<Row>> queryMono = Mono.create(sink -> {
             SqlClient executor = getCurrentTransaction(context, pool, query);
             SqlClient client = executor.preparedBatch(query, params, asyncResultMonoSinkAdapter(sink));
             sink.onCancel(client::close);
         });
+        return queryMono.publishOn(scheduler);
     }
 
     private static Handler<AsyncResult<RowSet<Row>>> asyncResultMonoSinkAdapter(MonoSink<RowSet<Row>> sink) {
         return rowSetAsyncResult -> {
             if (rowSetAsyncResult.succeeded()) {
+                log.debug("got result");
                 sink.success(rowSetAsyncResult.result());
             } else {
+                log.debug("got error");
                 sink.error(rowSetAsyncResult.cause());
             }
         };

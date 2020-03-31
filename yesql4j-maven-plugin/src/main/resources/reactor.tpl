@@ -16,45 +16,46 @@ import java.util.List;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import reactor.core.scheduler.Scheduler;
 
 public final class {{className}} {
 {{#each selects}}{{#if hasParams}}
     @NotNull
-    public static Mono<RowSet<Row>> {{name}}(MySQLPool pool, {{paramsSignature}}) {
-        return Yesql4jReactor.preparedQuery(pool, "{{query}}", Arrays.asList({{paramsIndexes}}), Tuple.wrap({{paramsBindings}}));
+    public static Mono<RowSet<Row>> {{name}}(MySQLPool pool, Scheduler scheduler, {{paramsSignature}}) {
+        return Yesql4jReactor.preparedQuery(pool, scheduler, "{{query}}", Arrays.asList({{paramsIndexes}}), Tuple.wrap({{paramsBindings}}));
     }{{else}}
     @NotNull
-    public static Mono<RowSet<Row>> {{name}}(MySQLPool pool) {
-        return Yesql4jReactor.preparedQuery(pool, "{{query}}");
+    public static Mono<RowSet<Row>> {{name}}(MySQLPool pool, Scheduler scheduler) {
+        return Yesql4jReactor.preparedQuery(pool, scheduler, "{{query}}");
     }{{/if}}
 {{/each}}
 {{#each updates}}{{#if hasParams}}
     @NotNull
-    public static Mono<Integer> {{name}}(MySQLPool pool, {{paramsSignature}}) {
-        return Yesql4jReactor.preparedQuery(pool, "{{query}}", Arrays.asList({{paramsIndexes}}), Tuple.wrap({{paramsBindings}})).map(SqlResult::rowCount);
+    public static Mono<Integer> {{name}}(MySQLPool pool, Scheduler scheduler, {{paramsSignature}}) {
+        return Yesql4jReactor.preparedQuery(pool, scheduler, "{{query}}", Arrays.asList({{paramsIndexes}}), Tuple.wrap({{paramsBindings}})).map(SqlResult::rowCount);
     }
 
     @NotNull
-    public static Mono<Integer> {{name}}(MySQLPool pool, List<Map<String, Object>> params) {
+    public static Mono<Integer> {{name}}(MySQLPool pool, Scheduler scheduler, List<Map<String, Object>> params) {
         List<Tuple> wrappedParams = params.stream()
             .map(row -> Tuple.wrap(row))
             .collect(Collectors.toList());
-        return Yesql4jReactor.preparedBatch(pool, "{{query}}", wrappedParams).map(SqlResult::rowCount);
+        return Yesql4jReactor.preparedBatch(pool, scheduler, "{{query}}", wrappedParams).map(SqlResult::rowCount);
     }{{else}}
     @NotNull
-    public static Mono<Integer> {{name}}(MySQLPool pool) {
-        return Yesql4jReactor.preparedQuery(pool, "{{query}}").map(SqlResult::rowCount);
+    public static Mono<Integer> {{name}}(MySQLPool pool, Scheduler scheduler) {
+        return Yesql4jReactor.preparedQuery(pool, scheduler, "{{query}}").map(SqlResult::rowCount);
     }{{/if}}
 {{/each}}{{#each inserts}}{{#if hasParams}}
     @NotNull
-    public static Mono<Long> {{name}}(MySQLPool pool, {{paramsSignature}}) {
-        return Yesql4jReactor.preparedQuery(pool, "{{query}}", Arrays.asList({{paramsIndexes}}), Tuple.wrap({{paramsBindings}}))
+    public static Mono<Long> {{name}}(MySQLPool pool, Scheduler scheduler, {{paramsSignature}}) {
+        return Yesql4jReactor.preparedQuery(pool, scheduler, "{{query}}", Arrays.asList({{paramsIndexes}}), Tuple.wrap({{paramsBindings}}))
             .map(res -> res.property(MySQLClient.LAST_INSERTED_ID));
     }{{else}}
 
     @NotNull
-    public static Mono<Long> {{name}}(MySQLPool pool) {
-        return Yesql4jReactor.preparedQuery(pool, "{{query}}")
+    public static Mono<Long> {{name}}(MySQLPool pool, Scheduler scheduler) {
+        return Yesql4jReactor.preparedQuery(pool, scheduler, "{{query}}")
             .map(res -> res.property(MySQLClient.LAST_INSERTED_ID));
     }{{/if}}
 {{/each}}
