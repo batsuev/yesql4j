@@ -38,7 +38,7 @@ public final class {{className}} {
     @NotNull
     public static Mono<Integer> {{name}}(MySQLPool pool, Scheduler scheduler, List<Map<String, Object>> params) {
         List<Tuple> wrappedParams = params.stream()
-            .map(row -> Tuple.wrap(row))
+            .map(row -> Tuple.wrap({{#each paramsBindingsList}}{{#unless @first}},{{/unless}}row.get("{{this}}"){{/each}}))
             .collect(Collectors.toList());
         return Yesql4jReactor.preparedBatch(pool, scheduler, "{{query}}", wrappedParams).map(SqlResult::rowCount);
     }{{else}}

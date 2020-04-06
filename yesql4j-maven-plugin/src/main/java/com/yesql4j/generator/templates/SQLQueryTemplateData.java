@@ -5,6 +5,7 @@ import com.yesql4j.generator.ParamsUtils;
 import com.yesql4j.generator.SQLQueryEscaper;
 import com.yesql4j.parser.SQLQueryDefinition;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 public final class SQLQueryTemplateData {
@@ -13,6 +14,7 @@ public final class SQLQueryTemplateData {
     private final String paramsSignature;
     private final String paramsIndexes;
     private final String paramsBindings;
+    private final List<String> paramsBindingsList;
     private final String name;
     private final Boolean hasParams;
 
@@ -26,7 +28,8 @@ public final class SQLQueryTemplateData {
         this.paramsSignature = ParamsUtils.methodParams(sqlQueryDefinition);
         this.paramsIndexes = ParamsUtils.getParamsOffsets(sqlQueryDefinition)
                 .stream().map(Object::toString).collect(Collectors.joining(", "));
-        this.paramsBindings = String.join(",", ParamsUtils.getQueryParamsBinding(sqlQueryDefinition));
+        this.paramsBindingsList = ParamsUtils.getQueryParamsBinding(sqlQueryDefinition);
+        this.paramsBindings = String.join(",", paramsBindingsList);
         this.hasParams = sqlQueryDefinition.hasParams();
     }
 
@@ -41,6 +44,8 @@ public final class SQLQueryTemplateData {
     public String getParamsBindings() {
         return paramsBindings;
     }
+
+    public List<String> getParamsBindingsList() { return paramsBindingsList; }
 
     public String getParamsIndexes() {
         return paramsIndexes;
