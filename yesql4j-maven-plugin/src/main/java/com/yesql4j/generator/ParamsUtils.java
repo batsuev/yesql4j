@@ -42,6 +42,7 @@ public final class ParamsUtils {
         int lastQIndex = 0;
         ArrayList<String> res = new ArrayList<>();
         for (SQLParam param : query.getParams()) {
+            if (param.isUnsafe()) continue;
             if (param.isNamed()) {
                 res.add(param.getName());
             } else {

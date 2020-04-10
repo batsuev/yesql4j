@@ -7,10 +7,12 @@ public final class SQLParam {
 
     private final @NotNull String name;
     private final int startIndex;
+    private final boolean isUnsafe;
 
-    private SQLParam(@NotNull String name, int startIndex) {
+    private SQLParam(@NotNull String name, int startIndex, boolean isUnsafe) {
         this.name = name;
         this.startIndex = startIndex;
+        this.isUnsafe = isUnsafe;
     }
 
     public int getStartIndex() {
@@ -22,11 +24,15 @@ public final class SQLParam {
     }
 
     public @NotNull SQLParam offsetLeft(int offset) {
-        return new SQLParam(name, startIndex - offset);
+        return new SQLParam(name, startIndex - offset, isUnsafe);
     }
 
     public int getNameLength() {
-        return name.length() + 1;
+        if (isUnsafe) { // [:name]
+            return name.length() + 3;
+        }else {         // :name
+            return name.length() + 1;
+        }
     }
 
     public int getEndIndex() {
@@ -37,13 +43,16 @@ public final class SQLParam {
         return !name.equals("?");
     }
 
-    public boolean isUnsafe() { return name.startsWith("!"); }
+    public boolean isUnsafe() {
+        return isUnsafe;
+    }
 
     @Override
     public String toString() {
         return "SQLParam{" +
                 "name='" + name + '\'' +
                 ", startIndex=" + startIndex +
+                ", isUnsafe=" + isUnsafe +
                 '}';
     }
 
@@ -53,15 +62,20 @@ public final class SQLParam {
         if (o == null || getClass() != o.getClass()) return false;
         SQLParam sqlParam = (SQLParam) o;
         return startIndex == sqlParam.startIndex &&
+                isUnsafe == sqlParam.isUnsafe &&
                 Objects.equals(name, sqlParam.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, startIndex);
+        return Objects.hash(name, startIndex, isUnsafe);
     }
 
     public static SQLParam create(@NotNull String name, int startedA) {
-        return new SQLParam(name, startedA);
+        return new SQLParam(name, startedA, false);
+    }
+
+    public static SQLParam create(@NotNull String name, int startedA, boolean isUnsafe) {
+        return new SQLParam(name, startedA, isUnsafe);
     }
 }

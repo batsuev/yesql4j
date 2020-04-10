@@ -23,10 +23,6 @@ public final class SQLQueryDefinition {
         this(name, query, SQLParamsFinder.search(query), Collections.emptyMap());
     }
 
-    public SQLQueryDefinition(@NotNull String name, @NotNull String query, @NotNull Map<String, String> paramsTypes) {
-        this(name, query, SQLParamsFinder.search(query), paramsTypes);
-    }
-
     public SQLQueryDefinition(@NotNull String name, @NotNull String query, @NotNull List<SQLParam> params) {
         this(name, query, params, Collections.emptyMap());
     }
@@ -55,7 +51,7 @@ public final class SQLQueryDefinition {
     }
 
     public boolean hasParams() {
-        return !this.params.isEmpty();
+        return !this.params.isEmpty() && this.params.stream().anyMatch(p -> !p.isUnsafe());
     }
 
     @Override

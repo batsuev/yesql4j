@@ -10,7 +10,8 @@ public final class SQLParamsFinder {
         QUERY,
         STRING_SINGLE_QUOTE,
         STRING_DOUBLE_QUOTE,
-        PARAMETER
+        PARAMETER,
+        UNSAFE_PARAMETER
     }
 
     public static List<SQLParam> search(String query) {
@@ -20,6 +21,7 @@ public final class SQLParamsFinder {
         int paramNameStartedAt = -1;
         for (int i = 0; i < query.length(); i++) {
             char c = query.charAt(i);
+            Character nextC = i < (query.length() - 1) ? query.charAt(i + 1) : null;
             switch (state) {
                 case QUERY:
                     switch (c) {
@@ -28,6 +30,13 @@ public final class SQLParamsFinder {
                             break;
                         case '\"':
                             state = State.STRING_DOUBLE_QUOTE;
+                            break;
+                        case '[':
+                            if (nextC != null && nextC == ':')
+                                state = State.UNSAFE_PARAMETER;
+                            paramNameStartedAt = i;
+                            namedParam = new StringBuilder();
+                            i++;
                             break;
                         case ':':
                             state = State.PARAMETER;
@@ -47,11 +56,12 @@ public final class SQLParamsFinder {
                 case STRING_DOUBLE_QUOTE:
                     if (c == '\"') state = State.QUERY;
                     break;
+                case UNSAFE_PARAMETER:
                 case PARAMETER:
                     if (Character.isAlphabetic(c) || Character.isDigit(c) || c == '_')
                         namedParam.append(c);
                     else {
-                        params.add(SQLParam.create(namedParam.toString(), paramNameStartedAt));
+                        params.add(SQLParam.create(namedParam.toString(), paramNameStartedAt, state == State.UNSAFE_PARAMETER));
                         namedParam = new StringBuilder();
                         paramNameStartedAt = -1;
                         state = State.QUERY;
@@ -61,6 +71,8 @@ public final class SQLParamsFinder {
         }
         if (state == State.PARAMETER) {
             params.add(SQLParam.create(namedParam.toString(), paramNameStartedAt));
+        }else if (state == State.UNSAFE_PARAMETER) {
+            params.add(SQLParam.create(namedParam.toString(), paramNameStartedAt, true));
         }
 
         return params;
