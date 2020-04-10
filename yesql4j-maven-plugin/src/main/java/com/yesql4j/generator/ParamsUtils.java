@@ -53,6 +53,13 @@ public final class ParamsUtils {
         return res;
     }
 
+    public static List<String> getUnsafeQueryParamsBinding(SQLQueryDefinition query) {
+        return query.getParams().stream()
+                .filter(SQLParam::isUnsafe)
+                .map(SQLParam::getName)
+                .collect(Collectors.toList());
+    }
+
     public static List<Integer> getParamsOffsets(SQLQueryDefinition query) {
         int offset = 0;
         ArrayList<Integer> offsets = new ArrayList<>();

@@ -56,5 +56,10 @@ public class SQLUnsafeParamsParserTest {
                 Collections.singletonList("id"),
                 ParamsUtils.getQueryParamsBinding(queries.get(0))
         );
+
+        assertEquals(
+                Collections.singletonList("sorting"),
+                ParamsUtils.getUnsafeQueryParamsBinding(queries.get(0))
+        );
     }
 }
