@@ -37,6 +37,8 @@ public final class SQLParam {
         return !name.equals("?");
     }
 
+    public boolean isUnsafe() { return name.startsWith("!"); }
+
     @Override
     public String toString() {
         return "SQLParam{" +

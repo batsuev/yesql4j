@@ -35,7 +35,7 @@ public final class {{className}} {
         }
     }{{else}}
     @NonNull
-    public <T> Lst<T> {{name}}(RowMapper<T> rowMapper) {
+    public <T> List<T> {{name}}(RowMapper<T> rowMapper) {
         return jdbcTemplate.query(pool, "{{query}}", rowMapper);
     }{{/if}}
 {{/each}}
