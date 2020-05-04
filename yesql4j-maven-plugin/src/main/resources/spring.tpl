@@ -64,7 +64,7 @@ public final class {{className}} {
                 ps = connection.prepareStatement(updatedQuery, Statement.RETURN_GENERATED_KEYS);
                 updatedParams = InParameters.flattenParams(params);
             }else {
-                ps = connection.prepareStatement("{{query}}");
+                ps = connection.prepareStatement("{{query}}", Statement.RETURN_GENERATED_KEYS);
             }
             int idx = 0;
             for (Object param : params) {
@@ -72,7 +72,11 @@ public final class {{className}} {
             }
             return ps;
         }, keyHolder);
-        return (long) keyHolder.getKey();
+        Number key = keyHolder.getKey();
+        if (key == null){
+            throw new IllegalStateException("Returned key is null");
+        }
+        return key.longValue();
     }{{else}}
     public Long {{name}}() {
         KeyHolder keyHolder = new GeneratedKeyHolder();
