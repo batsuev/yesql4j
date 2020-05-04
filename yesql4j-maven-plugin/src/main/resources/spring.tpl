@@ -2,7 +2,6 @@
 package {{packageName}};
 {{/if}}
 
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.NonNull;
 import org.springframework.jdbc.core.RowMapper;
@@ -10,6 +9,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.List;
 import java.util.Arrays;
 import com.yesql4j.spring.InParameters;
@@ -35,8 +35,8 @@ public final class {{className}} {
         }
     }{{else}}
     @NonNull
-    public <T> Lst<T> {{name}}(RowMapper<T> rowMapper) {
-        return jdbcTemplate.query(pool, "{{query}}", rowMapper);
+    public <T> List<T> {{name}}(RowMapper<T> rowMapper) {
+        return jdbcTemplate.query("{{query}}", rowMapper);
     }{{/if}}
 {{/each}}
 {{#each updates}}{{#if hasParams}}
@@ -61,7 +61,7 @@ public final class {{className}} {
             List<Object> updatedParams = params;
             if (InParameters.hasListParam(params)) {
                 String updatedQuery = InParameters.addListParams("{{query}}", Arrays.asList({{paramsIndexes}}), params);
-                ps = connection.prepareStatement(updatedQuery);
+                ps = connection.prepareStatement(updatedQuery, Statement.RETURN_GENERATED_KEYS);
                 updatedParams = InParameters.flattenParams(params);
             }else {
                 ps = connection.prepareStatement("{{query}}");
